@@ -1,9 +1,6 @@
-#if DOTWEEN_ENABLED
+#if PRIMETWEEN_ENABLED
 using System;
-using DG.Tweening;
-using DG.Tweening.Core;
-using DG.Tweening.Plugins.Core.PathCore;
-using DG.Tweening.Plugins.Options;
+using PrimeTween;
 using UnityEngine;
 
 namespace BrunoMikoski.AnimationSequencer
@@ -56,23 +53,38 @@ namespace BrunoMikoski.AnimationSequencer
         private Transform previousTarget;
         private Vector3 previousPosition;
 
-        protected override Tweener GenerateTween_Internal(GameObject target, float duration)
+        protected override Tween GenerateTween_Internal(GameObject target, float duration)
         {
-            TweenerCore<Vector3, Path, PathOptions> tween;
-
             previousTarget = target.transform;
-            if (!isLocal)
+            Vector3[] path = GetPathPositions();
+            if (path == null || path.Length == 0)
             {
-                tween = target.transform.DOPath(GetPathPositions(), duration, pathType, pathMode, resolution, gizmoColor);
-                previousPosition = target.transform.position;
-            }
-            else
-            {
-                tween = target.transform.DOLocalPath(GetPathPositions(), duration, pathType, pathMode, resolution, gizmoColor);
-                previousPosition = target.transform.localPosition;
+                Debug.LogWarning($"{DisplayName} has no path points.");
+                return Tween.Delay(duration);
             }
 
-            return tween;
+            previousPosition = isLocal ? target.transform.localPosition : target.transform.position;
+
+            if (IsRelative)
+            {
+                for (int i = 0; i < path.Length; i++)
+                    path[i] += previousPosition;
+            }
+
+            if (pathMode != PathMode.Full3D)
+                Debug.LogWarning($"{DisplayName} ignores PathMode '{pathMode}' in PrimeTween migration.");
+
+            float startT = Direction == AnimationDirection.From ? 1f : 0f;
+            float endT = Direction == AnimationDirection.From ? 0f : 1f;
+
+            return Tween.Custom(startT, endT, duration, t =>
+            {
+                Vector3 pos = PathTweenUtils.EvaluatePath(path, pathType, t);
+                if (isLocal)
+                    target.transform.localPosition = pos;
+                else
+                    target.transform.position = pos;
+            }, Ease.ToEasing());
         }
 
 

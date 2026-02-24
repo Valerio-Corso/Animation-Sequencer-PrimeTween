@@ -1,6 +1,6 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
-using DG.Tweening;
+using PrimeTween;
 using UnityEngine;
 
 namespace BrunoMikoski.AnimationSequencer
@@ -38,13 +38,13 @@ namespace BrunoMikoski.AnimationSequencer
         private Transform previousTarget;
         private Quaternion previousRotation;
 
-        protected override Tweener GenerateTween_Internal(GameObject target, float duration)
+        protected override Tween GenerateTween_Internal(GameObject target, float duration)
         {
             previousTarget = target.transform;
-            previousRotation = target.transform.rotation;
-            Tweener tween = target.transform.DOPunchRotation(punch, duration, vibrato, elasticity);
+            previousRotation = target.transform.localRotation;
 
-            return tween;
+            var settings = new ShakeSettings(punch, duration, vibrato, asymmetryFactor: 1f - elasticity);
+            return Tween.PunchLocalRotation(previousTarget, settings);
         }
 
         public override void ResetToInitialState()
@@ -52,7 +52,7 @@ namespace BrunoMikoski.AnimationSequencer
             if (previousTarget == null)
                 return;
             
-            previousTarget.rotation = previousRotation;
+            previousTarget.localRotation = previousRotation;
         }
     }
 }

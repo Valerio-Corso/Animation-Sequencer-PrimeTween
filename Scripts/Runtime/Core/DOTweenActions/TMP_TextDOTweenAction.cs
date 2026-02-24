@@ -1,10 +1,8 @@
-#if DOTWEEN_ENABLED
+#if PRIMETWEEN_ENABLED
 #if TMP_ENABLED
 
 using System;
-using DG.Tweening;
-using DG.Tweening.Core;
-using DG.Tweening.Plugins.Options;
+using PrimeTween;
 using TMPro;
 using UnityEngine;
 
@@ -44,9 +42,10 @@ namespace BrunoMikoski.AnimationSequencer
         private TMP_Text tmpTextComponent;
         
         private string previousText;
+        private int previousMaxVisibleCharacters;
         private TMP_Text previousTarget;
 
-        protected override Tweener GenerateTween_Internal(GameObject target, float duration)
+        protected override Tween GenerateTween_Internal(GameObject target, float duration)
         {
             if (tmpTextComponent == null)
             {
@@ -54,14 +53,25 @@ namespace BrunoMikoski.AnimationSequencer
                 if (tmpTextComponent == null)
                 {
                     Debug.LogError($"{target} does not have {TargetComponentType} component");
-                    return null;
+                    return default;
                 }
             }
 
             previousText = tmpTextComponent.text;
+            previousMaxVisibleCharacters = tmpTextComponent.maxVisibleCharacters;
             previousTarget = tmpTextComponent;
-            TweenerCore<string, string, StringOptions> tween = tmpTextComponent.DOText(text, duration, richText, scrambleMode);
-            return tween;
+
+            if (scrambleMode != ScrambleMode.None)
+                Debug.LogWarning($"{DisplayName} ignores '{nameof(scrambleMode)}' with PrimeTween migration.");
+
+            tmpTextComponent.text = text ?? string.Empty;
+            tmpTextComponent.ForceMeshUpdate();
+            int totalCharacters = tmpTextComponent.textInfo.characterCount;
+
+            int start = Direction == AnimationDirection.From ? totalCharacters : 0;
+            int end = Direction == AnimationDirection.From ? 0 : totalCharacters;
+
+            return Tween.TextMaxVisibleCharacters(tmpTextComponent, start, end, duration, Ease.ToEasing());
         }
 
         public override void ResetToInitialState()
@@ -73,6 +83,7 @@ namespace BrunoMikoski.AnimationSequencer
                 return;
 
             previousTarget.text = previousText;
+            previousTarget.maxVisibleCharacters = previousMaxVisibleCharacters;
         }
     }
 }

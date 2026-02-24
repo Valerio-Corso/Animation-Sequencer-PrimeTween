@@ -1,8 +1,6 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
-using DG.Tweening;
-using DG.Tweening.Core;
-using DG.Tweening.Plugins.Options;
+using PrimeTween;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -25,7 +23,7 @@ namespace BrunoMikoski.AnimationSequencer
         private Graphic targetGraphic;
         private float previousAlpha;
 
-        protected override Tweener GenerateTween_Internal(GameObject target, float duration)
+        protected override Tween GenerateTween_Internal(GameObject target, float duration)
         {
             if (targetGraphic == null)
             {
@@ -33,22 +31,23 @@ namespace BrunoMikoski.AnimationSequencer
                 if (targetGraphic == null)
                 {
                     Debug.LogError($"{target} does not have {TargetComponentType} component");
-                    return null;
+                    return default;
                 }
             }
 
             previousAlpha = targetGraphic.color.a;
-            TweenerCore<Color, Color, ColorOptions> graphicTween = targetGraphic.DOFade(alpha, duration);
+            var (start, end) = PrimeTweenActionUtils.ResolveFloat(previousAlpha, alpha, IsRelative, Direction);
+            Tween graphicTween = Tween.Alpha(targetGraphic, start, end, duration, Ease.ToEasing());
             
 #if UNITY_EDITOR 
             if (!Application.isPlaying)
             {
                 // Work around a Unity bug where updating the colour does not cause any visual change outside of PlayMode.
                 // https://forum.unity.com/threads/editor-scripting-force-color-update.798663/
-                graphicTween.OnUpdate(() =>
+                graphicTween.OnUpdate(targetGraphic, (graphic, _) =>
                 {
-                    targetGraphic.enabled = false;
-                    targetGraphic.enabled = true;
+                    graphic.enabled = false;
+                    graphic.enabled = true;
                 });
             }
 #endif

@@ -1,6 +1,6 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
-using DG.Tweening;
+using PrimeTween;
 using UnityEngine;
 
 namespace BrunoMikoski.AnimationSequencer
@@ -42,19 +42,11 @@ namespace BrunoMikoski.AnimationSequencer
         public virtual Type TargetComponentType { get; }
         public abstract string DisplayName { get; }
 
-        protected abstract Tweener GenerateTween_Internal(GameObject target, float duration);
+        protected abstract Tween GenerateTween_Internal(GameObject target, float duration);
 
         public Tween GenerateTween(GameObject target, float duration)
         {
-            Tweener tween = GenerateTween_Internal(target, duration);
-            if (direction == AnimationDirection.From)
-                // tween.SetRelative() does not work for From variant of "Move To Anchored Position", it must be set
-                // here instead. Not sure if this is a bug in DOTween or expected behaviour...
-                tween.From(isRelative: isRelative);
-
-            tween.SetEase(ease);
-            tween.SetRelative(isRelative);
-            return tween;
+            return GenerateTween_Internal(target, duration);
         }
 
         public abstract void ResetToInitialState();

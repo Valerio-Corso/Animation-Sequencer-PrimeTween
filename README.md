@@ -1,48 +1,8 @@
 # Animation Sequencer
 
-<p align="center">
-    <a href="https://github.com/brunomikoski/Animation-Sequencer/blob/master/LICENSE.md">
-		<img alt="GitHub license" src ="https://img.shields.io/github/license/Thundernerd/Unity3D-PackageManagerModules" />
-	</a>
-
-</p> 
-<p align="center">
-	<a href="https://www.codacy.com/gh/brunomikoski/Animation-Sequencer/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=brunomikoski/Animation-Sequencer&amp;utm_campaign=Badge_Grade"><img src="https://app.codacy.com/project/badge/Grade/ab4c5923ca0545c9b8c85d87adbd689a"/></a>
-    <a href="https://openupm.com/packages/com.brunomikoski.animationsequencer/">
-        <img src="https://img.shields.io/npm/v/com.brunomikoski.animationsequencer?label=openupm&amp;registry_uri=https://package.openupm.com" />
-    </a>
-
-  <a href="https://github.com/brunomikoski/Animation-Sequencer/issues">
-     <img alt="GitHub issues" src ="https://img.shields.io/github/issues/brunomikoski/Animation-Sequencer" />
-  </a>
-
-  <a href="https://github.com/brunomikoski/Animation-Sequencer/pulls">
-   <img alt="GitHub pull requests" src ="https://img.shields.io/github/issues-pr/brunomikoski/Animation-Sequencer" />
-  </a>
-  
-  <img alt="GitHub last commit" src ="https://img.shields.io/github/last-commit/brunomikoski/Animation-Sequencer" />
-</p>
-
-<p align="center">
-    	<a href="https://github.com/brunomikoski">
-        	<img alt="GitHub followers" src="https://img.shields.io/github/followers/brunomikoski?style=social">
-	</a>	
-	<a href="https://twitter.com/brunomikoski">
-		<img alt="Twitter Follow" src="https://img.shields.io/twitter/follow/brunomikoski?style=social">
-	</a>
-</p>
-
-I LOVE Tween, I love DOTween even more! But having to wait for a recompilation every time you tweak a single value on some animation it's frustrating! Even more complicated is properly have to visualize the entire animation in your head and having to wait until you reach your animation to see what you have done! That's why I created the Animation Sequencer, it is (~~cloned~~) **HEAVILY INSPIRED** from [Space Ape](https://spaceapegames.com/) amazing [Creative Engineering: Balancing & Juicing with Animations](https://youtu.be/4JoBw212Kyg) presentation.
-
-*This is still in heavy development, please use it carefully*
-
-
-<p align="center">
-  <img alt="Example" src="https://user-images.githubusercontent.com/600419/109826506-c299cb00-7c32-11eb-8b0d-8c0e97c4b5b7.gif">
-   <img alt="Example" src="https://user-images.githubusercontent.com/600419/128615966-ee93d57b-9cfe-4402-9f9c-ded83ef2b0e8.gif">
-
-</p>
-
+Based upon https://github.com/brunomikoski/Animation-Sequencer
+This project is a fork of the original Animation Sequencer, which was designed to work with DOTween. 
+This fork is simply a migration to PrimeTween for now.
 
 ## Features
 - Allow you to create a complex sequence of Tweens/Actions and play on Editor Mode!
@@ -54,22 +14,23 @@ I LOVE Tween, I love DOTween even more! But having to wait for a recompilation e
 
 ## Built in Steps
  - Tween Target 
-    - DOAnchoredPosition
-    - DOMove
-    - DOScale
-    - DORotate
-    - DOFade (Canvas Group)
-    - DOFade (Graphic)
-    - DOPath
-    - DOShake (Position/Rotation/Scale)
-    - DOPunch (Position/Rotation/Scale)
-    - DOText (TextMeshPro Support)
-    - DOFill  
+    - Anchored Position
+    - Move
+    - Scale
+    - Rotate
+    - Fade (Canvas Group)
+    - Fade (Graphic)
+    - Path
+    - Shake (Position/Rotation/Scale)
+    - Punch (Position/Rotation/Scale)
+    - Text (TextMeshPro Support)
+    - Fill  
  - Play Particle System
  - Play Animation Sequencer
 
 ## How to use?
-- Animation Sequencer rely on DOTween for now, so it a requirement that you have `DOTween` on your project with properly created `asmdef` for it (Created by the `DOTween` setup panel)
+- Animation Sequencer relies on PrimeTween, so install `com.kyrylokuzyk.primetween` (Asset Store or UPM). For UPM, add the npm scoped registry for `com.kyrylokuzyk` and install PrimeTween from My Registries.
+- When the `PrimeTween.Runtime` assembly is detected, the `PRIMETWEEN_ENABLED` define is added automatically.
 - Add the Animation Sequencer to any GameObject and start your animation! 
 - Using the <kbd>+</kbd> button under the `Animation Steps` you can add a new step
 - Select <kbd>Tween Target</kbd>
@@ -80,8 +41,8 @@ I LOVE Tween, I love DOTween even more! But having to wait for a recompilation e
 ## FAQ
 
 <details>
-<summary>I'm seeing a bunch of errors  like `error CS1929: 'CanvasGroup' does not contain a definition for 'DOFade'`</summary> 
-This means that you don't have the DOTween setup complete with Asmdef files, make sure you do it by the menu: `Tools/Demigiant/DOTween Utility Panel`
+<summary>I'm seeing errors like `The type or namespace name 'PrimeTween' could not be found`</summary> 
+This means PrimeTween isn't installed or its asmdef wasn't detected. Install PrimeTween and make sure the `PrimeTween.Runtime` assembly is available so the `PRIMETWEEN_ENABLED` define can be set.
 	
 </details>
 <details>
@@ -102,14 +63,14 @@ Also notice that in this case I'm adding the Duration its getting the lenght fro
 
      public override void AddTweenToSequence(Sequence animationSequence)
      {
-         animationSequence.AppendInterval(Delay);
-         animationSequence.AppendCallback(
+         animationSequence.ChainDelay(Delay);
+         animationSequence.ChainCallback(
              () =>
              {
                  animation.Play();
              }
          );
-         animationSequence.AppendInterval(animation.clip.length);
+         animationSequence.ChainDelay(animation.clip.length);
      }
  }
 ```
@@ -118,9 +79,9 @@ Also notice that in this case I'm adding the Duration its getting the lenght fro
 
 <details>
 
-<summary>I have my own DOTween extensions, can I use that? </summary>
+<summary>I have my own PrimeTween tweens, can I use that? </summary>
 
-Absolutely! The same as the step, you can add any new DOTween action by extending `DOTweenActionBase`. In order to avoid any performance issues all the tweens are created on the PrepareToPlay method on Awake, and are paused.
+Absolutely! The same as the step, you can add any new tween action by extending `DOTweenActionBase` (legacy name). In order to avoid any performance issues all the tweens are created on the PrepareToPlay method on Awake, and are paused.
 
 ```c#
 [Serializable]
@@ -133,16 +94,17 @@ public sealed class ChangeMaterialStrengthDOTweenAction : DOTweenActionBase
     [SerializeField, Range(0,1)]
     private float materialStrength = 1;
 
-     public override bool CreateTween(GameObject target, float duration, int loops, LoopType loopType)
+    protected override Tween GenerateTween_Internal(GameObject target, float duration)
      {
         Renderer renderer = target.GetComponent<Renderer>();
         if (renderer == null)
-            return false;
+            return default;
 
-        TweenerCore<float, float, FloatOptions> materialTween = renderer.sharedMaterial.DOFloat(materialStrength, "Strength", duration);
+        Material material = renderer.sharedMaterial;
+        float start = material.GetFloat("_Strength");
+        float end = materialStrength;
+        return Tween.Custom(start, end, duration, value => material.SetFloat("_Strength", value), Ease.ToEasing());
         
-        SetTween(materialTween, loops, loopType);
-        return true;
     }
 }
 ```
@@ -190,7 +152,6 @@ To add it the package to your project:
   Name: OpenUPM
   URL:  https://package.openupm.com/
   Scope(s): com.brunomikoski
-            com.demigiant
   ```
 - click <kbd>Save</kbd>
 - open Package Manager
@@ -211,5 +172,4 @@ You can also add it directly from GitHub on Unity 2019.4+. Note that you won't b
 - paste `https://github.com/brunomikoski/Animation-Sequencer.git`
 - click <kbd>Add</kbd>
 </details>
-
 

@@ -1,6 +1,6 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
-using DG.Tweening;
+using PrimeTween;
 using UnityEngine;
 
 namespace BrunoMikoski.AnimationSequencer

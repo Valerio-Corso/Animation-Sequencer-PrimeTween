@@ -1,8 +1,6 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
-using DG.Tweening;
-using DG.Tweening.Core;
-using DG.Tweening.Plugins.Options;
+using PrimeTween;
 using UnityEngine;
 
 namespace BrunoMikoski.AnimationSequencer
@@ -23,7 +21,7 @@ namespace BrunoMikoski.AnimationSequencer
         private RectTransform rectTransform;
         private Vector2 previousAnchorPosition;
 
-        protected override Tweener GenerateTween_Internal(GameObject target, float duration)
+        protected override Tween GenerateTween_Internal(GameObject target, float duration)
         {
             if (rectTransform == null)
             {
@@ -32,16 +30,14 @@ namespace BrunoMikoski.AnimationSequencer
                 if (rectTransform == null)
                 {
                     Debug.LogError($"{target} does not have {TargetComponentType} component");
-                    return null;
+                    return default;
                 }
             }
 
             previousAnchorPosition = rectTransform.anchoredPosition;
-            TweenerCore<Vector2, Vector2, VectorOptions> anchorPosTween = rectTransform.DOAnchorPos(GetPosition(), duration);
-
-            anchorPosTween.SetOptions(axisConstraint);
-
-            return anchorPosTween;
+            Vector2 endValue = PrimeTweenActionUtils.ApplyAxisConstraint(previousAnchorPosition, GetPosition(), axisConstraint, IsRelative);
+            var (start, end) = PrimeTweenActionUtils.ResolveVector2(previousAnchorPosition, endValue, false, Direction);
+            return Tween.UIAnchoredPosition(rectTransform, start, end, duration, Ease.ToEasing());
         }
 
         protected abstract Vector2 GetPosition();

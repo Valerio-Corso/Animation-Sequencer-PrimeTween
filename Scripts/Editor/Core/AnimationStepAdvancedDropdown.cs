@@ -1,4 +1,4 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
 using System.Collections.Generic;
 using UnityEditor;

@@ -1,8 +1,6 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
-using DG.Tweening;
-using DG.Tweening.Core;
-using DG.Tweening.Plugins.Options;
+using PrimeTween;
 using UnityEngine;
 
 namespace BrunoMikoski.AnimationSequencer
@@ -25,7 +23,7 @@ namespace BrunoMikoski.AnimationSequencer
         private CanvasGroup canvasGroup;
         private float previousFade;
 
-        protected override Tweener GenerateTween_Internal(GameObject target, float duration)
+        protected override Tween GenerateTween_Internal(GameObject target, float duration)
         {
             if (canvasGroup == null)
             {
@@ -34,13 +32,13 @@ namespace BrunoMikoski.AnimationSequencer
                 if (canvasGroup == null)
                 {
                     Debug.LogError($"{target} does not have {TargetComponentType} component");
-                    return null;
+                    return default;
                 }
             }
 
             previousFade = canvasGroup.alpha;
-            TweenerCore<float, float, FloatOptions> canvasTween = canvasGroup.DOFade(alpha, duration);
-            return canvasTween;
+            var (start, end) = PrimeTweenActionUtils.ResolveFloat(previousFade, alpha, IsRelative, Direction);
+            return Tween.Alpha(canvasGroup, start, end, duration, Ease.ToEasing());
         }
 
         public override void ResetToInitialState()

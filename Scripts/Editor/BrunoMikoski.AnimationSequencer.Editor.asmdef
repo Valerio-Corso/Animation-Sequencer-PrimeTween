@@ -2,7 +2,8 @@
     "name": "BrunoMikoski.AnimationSequencer.Editor",
     "rootNamespace": "",
     "references": [
-        "BrunoMikoski.AnimationSequencer"
+        "BrunoMikoski.AnimationSequencer",
+        "PrimeTween.Runtime"
     ],
     "includePlatforms": [
         "Editor"

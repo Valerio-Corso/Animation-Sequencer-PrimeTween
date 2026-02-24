@@ -1,6 +1,6 @@
-#if DOTWEEN_ENABLED
+#if PRIMETWEEN_ENABLED
 using System;
-using DG.Tweening;
+using PrimeTween;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -26,9 +26,11 @@ namespace BrunoMikoski.AnimationSequencer
 
         public override void AddTweenToSequence(Sequence animationSequence)
         {
-            Sequence sequence = DOTween.Sequence();
-            sequence.SetDelay(Delay);
-            sequence.AppendCallback(() =>
+            Sequence sequence = Sequence.Create();
+            if (Delay > 0)
+                sequence.ChainDelay(Delay);
+
+            sequence.ChainCallback(() =>
             {
                 if (AllowCallbacks && !IsSkippingToEnd || invokeOnSkipToEnd)
                 {
@@ -37,9 +39,9 @@ namespace BrunoMikoski.AnimationSequencer
             });
             
             if (FlowType == FlowType.Append)
-                animationSequence.Append(sequence);
+                animationSequence.Chain(sequence);
             else
-                animationSequence.Join(sequence);
+                animationSequence.Group(sequence);
         }
 
         public override void ResetToInitialState()

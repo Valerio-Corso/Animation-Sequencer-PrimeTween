@@ -1,7 +1,6 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
-using BrunoMikoski.AnimationSequencer;
-using DG.Tweening;
+using PrimeTween;
 using UnityEngine;
 
 namespace BrunoMikoski.AnimationSequencer
@@ -32,14 +31,13 @@ namespace BrunoMikoski.AnimationSequencer
         private RectTransform previousTarget;
         private Vector2 previousSize;
 
-        protected override Tweener GenerateTween_Internal(GameObject target, float duration)
+        protected override Tween GenerateTween_Internal(GameObject target, float duration)
         {
             previousTarget = target.transform as RectTransform;
             previousSize = previousTarget.sizeDelta;
-            var tween = previousTarget.DOSizeDelta(sizeDelta, duration);
-            tween.SetOptions(axisConstraint);
-
-            return tween;
+            Vector2 endValue = PrimeTweenActionUtils.ApplyAxisConstraint(previousSize, sizeDelta, axisConstraint, IsRelative);
+            var (start, end) = PrimeTweenActionUtils.ResolveVector2(previousSize, endValue, false, Direction);
+            return Tween.UISizeDelta(previousTarget, start, end, duration, Ease.ToEasing());
         }
 
         public override void ResetToInitialState()

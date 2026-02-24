@@ -1,6 +1,6 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
-using DG.Tweening;
+using PrimeTween;
 using UnityEngine;
 
 namespace BrunoMikoski.AnimationSequencer
@@ -46,13 +46,16 @@ namespace BrunoMikoski.AnimationSequencer
         private Transform previousTarget;
         private Vector3 previousPosition;
 
-        protected override Tweener GenerateTween_Internal(GameObject target, float duration)
+        protected override Tween GenerateTween_Internal(GameObject target, float duration)
         {
             previousTarget = target.transform;
-            previousPosition = target.transform.position;
-            Tweener tween = target.transform.DOPunchPosition(punch, duration, vibrato, elasticity, snapping);
+            previousPosition = target.transform.localPosition;
 
-            return tween;
+            if (snapping)
+                Debug.LogWarning($"{DisplayName} doesn't support '{nameof(snapping)}' with PrimeTween.");
+
+            var settings = new ShakeSettings(punch, duration, vibrato, asymmetryFactor: 1f - elasticity);
+            return Tween.PunchLocalPosition(previousTarget, settings);
         }
 
         public override void ResetToInitialState()
@@ -60,7 +63,7 @@ namespace BrunoMikoski.AnimationSequencer
             if (previousTarget == null)
                 return;
             
-            previousTarget.position = previousPosition;
+            previousTarget.localPosition = previousPosition;
         }
     }
 }

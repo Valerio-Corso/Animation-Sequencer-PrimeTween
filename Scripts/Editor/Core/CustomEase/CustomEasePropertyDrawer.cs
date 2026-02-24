@@ -1,5 +1,4 @@
-﻿#if DOTWEEN_ENABLED
-using DG.Tweening;
+﻿#if PRIMETWEEN_ENABLED
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
@@ -15,7 +14,7 @@ namespace BrunoMikoski.AnimationSequencer
         {
             SerializedProperty easeProperty = property.FindPropertyRelative("ease");
 
-            if (easeProperty.enumValueIndex == (int)Ease.INTERNAL_Custom)
+            if (easeProperty.enumValueIndex == (int)Ease.Custom)
             {
                 return EditorGUIUtility.singleLineHeight * 2
                     + EditorGUIUtility.standardVerticalSpacing;
@@ -29,7 +28,7 @@ namespace BrunoMikoski.AnimationSequencer
             SerializedProperty easeProperty = property.FindPropertyRelative("ease");
 
             string displayName = "Custom";
-            if (easeProperty.enumValueIndex != (int)Ease.INTERNAL_Custom)
+            if (easeProperty.enumValueIndex != (int)Ease.Custom)
             {
                 displayName = ((Ease) easeProperty.enumValueIndex).ToString();
             }
@@ -65,7 +64,7 @@ namespace BrunoMikoski.AnimationSequencer
 
             EditorGUI.indentLevel++;
 
-            if (easeProperty.enumValueIndex == (int)Ease.INTERNAL_Custom)
+            if (easeProperty.enumValueIndex == (int)Ease.Custom)
             {
                 SerializedProperty curveProperty = property.FindPropertyRelative("curve");
                 position.y += EditorGUIUtility.singleLineHeight

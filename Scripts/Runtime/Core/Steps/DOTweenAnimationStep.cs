@@ -1,7 +1,7 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
 using System.Linq;
-using DG.Tweening;
+using PrimeTween;
 using UnityEngine;
 
 namespace BrunoMikoski.AnimationSequencer
@@ -36,24 +36,36 @@ namespace BrunoMikoski.AnimationSequencer
 
         public override void AddTweenToSequence(Sequence animationSequence)
         {
-            Sequence sequence = DOTween.Sequence();
+            int cycles = PrimeTweenActionUtils.ToPrimeTweenCycles(loopCount);
+            Sequence sequence = Sequence.Create(cycles: cycles,
+                cycleMode: PrimeTweenActionUtils.ToSequenceCycleMode(loopType),
+                sequenceEase: PrimeTween.Ease.Linear);
+
+            if (Delay > 0)
+                sequence.ChainDelay(Delay);
+
+            bool hasTween = false;
             for (int i = 0; i < actions.Length; i++)
             {
                 Tween tween = actions[i].GenerateTween(target, duration);
-                if (i == 0)
+                if (!tween.isAlive)
+                    continue;
+
+                if (!hasTween)
                 {
-                    tween.SetDelay(Delay);
+                    sequence.Chain(tween);
+                    hasTween = true;
                 }
-                sequence.Join(tween);
+                else
+                {
+                    sequence.Group(tween);
+                }
             }
 
-            sequence.SetLoops(loopCount, loopType);
-            
             if (FlowType == FlowType.Join)
-                animationSequence.Join(sequence);
+                animationSequence.Group(sequence);
             else
-                animationSequence.Append(sequence);
-
+                animationSequence.Chain(sequence);
         }
 
         public override void ResetToInitialState()

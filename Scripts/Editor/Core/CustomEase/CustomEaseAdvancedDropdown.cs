@@ -1,6 +1,5 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
-using DG.Tweening;
 using UnityEditor.IMGUI.Controls;
 using UnityEngine;
 
@@ -33,8 +32,8 @@ namespace BrunoMikoski.AnimationSequencer
             for (int i = 0; i < names.Length; i++)
             {
                 string name = names[i];
-                if (string.Equals(name, "INTERNAL_Zero", StringComparison.Ordinal)
-                    || string.Equals(name, "INTERNAL_Custom", StringComparison.Ordinal))
+                if (string.Equals(name, nameof(Ease.Custom), StringComparison.Ordinal)
+                    || string.Equals(name, nameof(Ease.Default), StringComparison.Ordinal))
                 {
                     continue;
                 }
@@ -42,7 +41,7 @@ namespace BrunoMikoski.AnimationSequencer
                 root.AddChild(new CustomEaseAdvancedDropdownItem(i, name));
             }
 
-            root.AddChild(new CustomEaseAdvancedDropdownItem((int)Ease.INTERNAL_Custom, "Custom"));
+            root.AddChild(new CustomEaseAdvancedDropdownItem((int)Ease.Custom, "Custom"));
             return root;
         }
         

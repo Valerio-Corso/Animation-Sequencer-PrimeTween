@@ -1,6 +1,6 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
-using DG.Tweening;
+using PrimeTween;
 using UnityEngine;
 
 namespace BrunoMikoski.AnimationSequencer
@@ -46,14 +46,22 @@ namespace BrunoMikoski.AnimationSequencer
         private Transform previousTarget;
         private Vector3 previousScale;
 
-        protected override Tweener GenerateTween_Internal(GameObject target, float duration)
+        protected override Tween GenerateTween_Internal(GameObject target, float duration)
         {
             previousTarget = target.transform;
             previousScale = previousTarget.localScale;
             
-            Tweener tween = previousTarget.DOShakeScale(duration, strength, vibrato, randomness, fadeout);
+            if (Math.Abs(randomness - 90f) > 0.001f)
+                Debug.LogWarning($"{DisplayName} doesn't support '{nameof(randomness)}' with PrimeTween.");
 
-            return tween;
+            var settings = new ShakeSettings(strength, duration, vibrato);
+            if (fadeout)
+            {
+                settings.enableFalloff = true;
+                settings.frequency *= 1.35f;
+            }
+
+            return Tween.ShakeScale(previousTarget, settings);
         }
 
         public override void ResetToInitialState()

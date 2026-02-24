@@ -1,24 +1,23 @@
 {
-  "name": "com.brunomikoski.animationsequencer",
-  "displayName": "Animation Sequencer",
+  "name": "com.brul.animationsequencer-primetween",
+  "displayName": "Animation Sequencer for PrimeTween",
   "version": "0.5.5",
   "unity": "2021.3",
-  "description": "Animation sequencer is a way to create complex animations of sequence of events by a friendly user interface. Requires DOTween v1.2.632",
+  "description": "Animation sequencer is a way to create complex animation sequences by a friendly user interface. Requires PrimeTween v1.3.8+",
   "keywords": [
     "ui",
-    "dotween",
+    "primetween",
     "sequence"
   ],
   "category": "editor extensions",
-  "homepage": "https://github.com/brunomikoski/Animation-Sequencer",
+  "homepage": "https://github.com/Valerio-Corso/Animation-Sequencer-PrimeTween",
   "repository": {
     "type": "git",
-    "url": "https://github.com/brunomikoski/Animation-Sequencer.git"
+    "url": "https://github.com/Valerio-Corso/Animation-Sequencer-PrimeTween.git"
   },
-  "bugs": "https://github.com/brunomikoski/Animation-Sequencer/issues",
+  "bugs": "https://github.com/Valerio-Corso/Animation-Sequencer-PrimeTween/issues",
   "author": {
-    "name": "Bruno Mikoski",
-    "url": "https://www.brunomikoski.com"
+    "name": "Valerio C."
   },
   "type": "library"
 }

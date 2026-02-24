@@ -1,6 +1,6 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
-using DG.Tweening;
+using PrimeTween;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -26,10 +26,11 @@ namespace BrunoMikoski.AnimationSequencer
         public override string DisplayName => "Set Target Image Properties";
         public override void AddTweenToSequence(Sequence animationSequence)
         {
-            Sequence behaviourSequence = DOTween.Sequence();
-            behaviourSequence.SetDelay(Delay);
+            Sequence behaviourSequence = Sequence.Create();
+            if (Delay > 0)
+                behaviourSequence.ChainDelay(Delay);
 
-            behaviourSequence.AppendCallback(() =>
+            behaviourSequence.ChainCallback(() =>
             {
 
                 if (targetColor != targetGraphic.color)
@@ -54,9 +55,9 @@ namespace BrunoMikoski.AnimationSequencer
             });
             
             if (FlowType == FlowType.Join)
-                animationSequence.Join(behaviourSequence);
+                animationSequence.Group(behaviourSequence);
             else
-                animationSequence.Append(behaviourSequence);
+                animationSequence.Chain(behaviourSequence);
         }
 
         public override void ResetToInitialState()

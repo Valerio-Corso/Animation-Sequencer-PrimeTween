@@ -1,6 +1,6 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
-using DG.Tweening;
+using PrimeTween;
 using UnityEngine;
 
 namespace BrunoMikoski.AnimationSequencer
@@ -34,17 +34,18 @@ namespace BrunoMikoski.AnimationSequencer
             if (wasActive == active)
                 return;
 
-            Sequence behaviourSequence = DOTween.Sequence();
-            behaviourSequence.SetDelay(Delay);
+            Sequence behaviourSequence = Sequence.Create();
+            if (Delay > 0)
+                behaviourSequence.ChainDelay(Delay);
 
-            behaviourSequence.AppendCallback(() =>
+            behaviourSequence.ChainCallback(() =>
             {
                 targetGameObject.SetActive(active);
             });
             if (FlowType == FlowType.Join)
-                animationSequence.Join(behaviourSequence);
+                animationSequence.Group(behaviourSequence);
             else
-                animationSequence.Append(behaviourSequence);
+                animationSequence.Chain(behaviourSequence);
         }
 
         public override void ResetToInitialState()

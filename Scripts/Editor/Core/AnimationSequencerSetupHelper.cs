@@ -9,30 +9,30 @@ namespace BrunoMikoski.AnimationSequencer
     [InitializeOnLoad]
     public static class AnimationSequencerSetupHelper
     {
-        private static string SCRIPTING_DEFINE_SYMBOL = "DOTWEEN_ENABLED";
-        private static string DOTWEEN_ASSEMBLY_NAME = "DOTween.Modules";
+        private static string SCRIPTING_DEFINE_SYMBOL = "PRIMETWEEN_ENABLED";
+        private static string PRIMETWEEN_ASSEMBLY_NAME = "PrimeTween.Runtime";
         static AnimationSequencerSetupHelper()
         {
             Assembly[] availableAssemblies = CompilationPipeline.GetAssemblies(AssembliesType.PlayerWithoutTestAssemblies);
 
-            bool foundDOTween = false;
+            bool foundPrimeTween = false;
             for (int i = availableAssemblies.Length - 1; i >= 0; i--)
             {
-                if (availableAssemblies[i].name.IndexOf(DOTWEEN_ASSEMBLY_NAME, StringComparison.Ordinal) > -1)
+                if (availableAssemblies[i].name.IndexOf(PRIMETWEEN_ASSEMBLY_NAME, StringComparison.Ordinal) > -1)
                 {
-                    foundDOTween = true;
+                    foundPrimeTween = true;
                     break;
                 }
             }
 
-            if (foundDOTween)
+            if (foundPrimeTween)
             {
                 AddScriptingDefineSymbol();
             }
             else
             {
                 RemoveScriptingDefineSymbol();
-                Debug.LogWarning("No DOTween found, animation sequencer will be disabled until DOTween setup is complete and asmdef files are created");
+                Debug.LogWarning("No PrimeTween found, animation sequencer will be disabled until PrimeTween setup is complete and asmdef files are created");
             }
         }
 

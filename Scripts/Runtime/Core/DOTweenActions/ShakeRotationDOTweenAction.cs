@@ -1,6 +1,6 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
-using DG.Tweening;
+using PrimeTween;
 using UnityEngine;
 
 namespace BrunoMikoski.AnimationSequencer
@@ -47,14 +47,22 @@ namespace BrunoMikoski.AnimationSequencer
         private Transform previousTarget;
         private Quaternion previousRotation;
 
-        protected override Tweener GenerateTween_Internal(GameObject target, float duration)
+        protected override Tween GenerateTween_Internal(GameObject target, float duration)
         {
             previousTarget = target.transform;
-            previousRotation = previousTarget.rotation;
+            previousRotation = previousTarget.localRotation;
             
-            Tweener tween = previousTarget.DOShakeRotation(duration, strength, vibrato, randomness, fadeout);
+            if (Math.Abs(randomness - 90f) > 0.001f)
+                Debug.LogWarning($"{DisplayName} doesn't support '{nameof(randomness)}' with PrimeTween.");
 
-            return tween;
+            var settings = new ShakeSettings(strength, duration, vibrato);
+            if (fadeout)
+            {
+                settings.enableFalloff = true;
+                settings.frequency *= 1.35f;
+            }
+
+            return Tween.ShakeLocalRotation(previousTarget, settings);
         }
 
         public override void ResetToInitialState()
@@ -62,7 +70,7 @@ namespace BrunoMikoski.AnimationSequencer
             if (previousTarget == null)
                 return;
             
-            previousTarget.rotation = previousRotation;
+            previousTarget.localRotation = previousRotation;
         }
     }
 }

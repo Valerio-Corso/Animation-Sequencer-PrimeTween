@@ -1,8 +1,6 @@
-#if DOTWEEN_ENABLED
+#if PRIMETWEEN_ENABLED
 using System;
-using DG.Tweening;
-using DG.Tweening.Core;
-using DG.Tweening.Plugins.Options;
+using PrimeTween;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -25,7 +23,7 @@ namespace BrunoMikoski.AnimationSequencer
         private Image image;
         private float previousFillAmount;
 
-        protected override Tweener GenerateTween_Internal(GameObject target, float duration)
+        protected override Tween GenerateTween_Internal(GameObject target, float duration)
         {
             if (image == null)
             {
@@ -33,13 +31,13 @@ namespace BrunoMikoski.AnimationSequencer
                 if (image == null)
                 {
                     Debug.LogError($"{target} does not have {TargetComponentType} component");
-                    return null;
+                    return default;
                 }
             }
 
             previousFillAmount = image.fillAmount;
-            TweenerCore<float, float, FloatOptions> tween = image.DOFillAmount(fillAmount, duration);
-            return tween;
+            var (start, end) = PrimeTweenActionUtils.ResolveFloat(previousFillAmount, fillAmount, IsRelative, Direction);
+            return Tween.UIFillAmount(image, start, end, duration, Ease.ToEasing());
         }
 
         public override void ResetToInitialState()

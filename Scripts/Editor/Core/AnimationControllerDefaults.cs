@@ -1,5 +1,4 @@
-﻿#if DOTWEEN_ENABLED
-using DG.Tweening;
+﻿#if PRIMETWEEN_ENABLED
 using UnityEngine;
 
 namespace BrunoMikoski.AnimationSequencer

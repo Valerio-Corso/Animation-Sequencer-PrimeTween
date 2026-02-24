@@ -1,7 +1,5 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
-using DG.DOTweenEditor;
-using DG.Tweening;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
 using UnityEditorInternal;
@@ -38,6 +36,7 @@ namespace BrunoMikoski.AnimationSequencer
         private float tweenTimeScale = 1f;
         private bool wasShowingStepsPanel;
         private bool justStartPreviewing;
+        private bool isPreviewing;
 
         private (float start, float end)[] previewingTimings;
 
@@ -68,7 +67,7 @@ namespace BrunoMikoski.AnimationSequencer
 
         public override bool RequiresConstantRepaint()
         {
-            return DOTweenEditorPreview.isPreviewing;
+            return isPreviewing;
         }
 
         public override bool UseDefaultMargins()
@@ -96,11 +95,8 @@ namespace BrunoMikoski.AnimationSequencer
 
             if (!Application.isPlaying)
             {
-                if (DOTweenEditorPreview.isPreviewing)
-                {
-                    sequencerController.ResetToInitialState();
-                    DOTweenEditorPreview.Stop();            
-                }
+                if (isPreviewing)
+                    StopPreview();
             }
             
             tweenTimeScale = 1f;
@@ -122,20 +118,20 @@ namespace BrunoMikoski.AnimationSequencer
         {
             if (playModeState == PlayModeStateChange.ExitingEditMode)
             {
-                if (DOTweenEditorPreview.isPreviewing)
+                if (isPreviewing)
                 {
                     sequencerController.ResetToInitialState();
-                    DOTweenEditorPreview.Stop();            
+                    StopPreview();
                 }
             }
         }
         
         private void PrefabSaving(GameObject gameObject)
         {
-            if (DOTweenEditorPreview.isPreviewing)
+            if (isPreviewing)
             {
                 sequencerController.ResetToInitialState();
-                DOTweenEditorPreview.Stop();            
+                StopPreview();
             }
         }
         
@@ -229,7 +225,7 @@ namespace BrunoMikoski.AnimationSequencer
         private void DrawAnimationSteps()
         {
             bool wasGUIEnabled = GUI.enabled;
-            if (DOTweenEditorPreview.isPreviewing)
+            if (isPreviewing)
                 GUI.enabled = false;
 
             reorderableList.DoLayoutList();
@@ -240,7 +236,7 @@ namespace BrunoMikoski.AnimationSequencer
         protected virtual void DrawCallbacks()
         {
             bool wasGUIEnabled = GUI.enabled;
-            if (DOTweenEditorPreview.isPreviewing)
+            if (isPreviewing)
                 GUI.enabled = false;
             SerializedProperty onStartEventSerializedProperty = serializedObject.FindProperty("onStartEvent");
             SerializedProperty onFinishedEventSerializedProperty = serializedObject.FindProperty("onFinishedEvent");
@@ -297,7 +293,7 @@ namespace BrunoMikoski.AnimationSequencer
             }
             
             bool wasEnabled = GUI.enabled; 
-            if (DOTweenEditorPreview.isPreviewing)
+            if (isPreviewing)
                 GUI.enabled = false;
             
             SerializedProperty updateTypeSerializedProperty = serializedObject.FindProperty("updateType");
@@ -350,10 +346,12 @@ namespace BrunoMikoski.AnimationSequencer
         
         private void UpdateSequenceTimeScale()
         {
-            if (sequencerController.PlayingSequence == null)
+            var sequence = sequencerController.PlayingSequence;
+            if (!sequence.isAlive)
                 return;
-            
-            sequencerController.PlayingSequence.timeScale = sequencerController.PlaybackSpeed * tweenTimeScale;
+
+            float sign = sequence.timeScale < 0f ? -1f : 1f;
+            sequencerController.SetTimeScale(sign * sequencerController.PlaybackSpeed * tweenTimeScale);
         }
         
 
@@ -417,14 +415,10 @@ namespace BrunoMikoski.AnimationSequencer
 
             if (!Application.isPlaying)
             {
-                GUI.enabled = DOTweenEditorPreview.isPreviewing;
+                GUI.enabled = isPreviewing;
                 if (GUILayout.Button(AnimationSequenceEditorGUIUtility.StopButtonGUIContent, previewButtonStyle))
                 {
-                    sequencerController.Rewind();
-                    DOTween.Kill(sequencerController.PlayingSequence);
-                    DOTweenEditorPreview.Stop();
-                    sequencerController.ResetToInitialState();
-                    sequencerController.ClearPlayingSequence();
+                    StopPreview();
                     if (AnimationSequencerSettings.GetInstance().AutoHideStepsWhenPreviewing)
                         showStepsPanel = wasShowingStepsPanel;
                 }
@@ -441,9 +435,9 @@ namespace BrunoMikoski.AnimationSequencer
         {
             if (!sequencerController.IsPlaying)
                 PlaySequence();
-            
-            sequencerController.PlayingSequence.GotoWithCallbacks((sequencerController.PlayingSequence.ElapsedPercentage() -
-                                                                   0.01f) * sequencerController.PlayingSequence.Duration());
+
+            float progress = Mathf.Clamp01(GetCurrentSequencerProgress() - 0.01f);
+            SetProgress(progress);
         }
 
         private void StepNext()
@@ -451,8 +445,8 @@ namespace BrunoMikoski.AnimationSequencer
             if (!sequencerController.IsPlaying)
                 PlaySequence();
 
-            sequencerController.PlayingSequence.GotoWithCallbacks((sequencerController.PlayingSequence.ElapsedPercentage() +
-                                                                   0.01f) * sequencerController.PlayingSequence.Duration());
+            float progress = Mathf.Clamp01(GetCurrentSequencerProgress() + 0.01f);
+            SetProgress(progress);
         }
 
         private void PlaySequence()
@@ -460,36 +454,34 @@ namespace BrunoMikoski.AnimationSequencer
             justStartPreviewing = false;
             if (!Application.isPlaying)
             {
-                if (!DOTweenEditorPreview.isPreviewing)
+                if (!isPreviewing)
                 {
                     justStartPreviewing = true;
-                    DOTweenEditorPreview.Start();
-
+                    isPreviewing = true;
                     sequencerController.Play();
-                    
-                    DOTweenEditorPreview.PrepareTweenForPreview(sequencerController.PlayingSequence);
+                    UpdateSequenceTimeScale();
 
                     if (AnimationSequencerSettings.GetInstance().DrawTimingsWhenPreviewing)
-                        previewingTimings = DOTweenProxy.GetTimings(sequencerController.PlayingSequence,
-                            sequencerController.AnimationSteps);
+                        previewingTimings = SequencerTimeline.GetTimings(sequencerController.AnimationSteps);
                     else
                         previewingTimings = null;
                 }
                 else
                 {
-                    if (sequencerController.PlayingSequence == null)
+                    if (!sequencerController.PlayingSequence.isAlive)
                     {
                         sequencerController.Play();
                     }
                     else
                     {
-                        if (!sequencerController.PlayingSequence.IsBackwards() &&
-                            sequencerController.PlayingSequence.fullPosition >= sequencerController.PlayingSequence.Duration())
+                        bool isBackwards = sequencerController.PlayingSequence.timeScale < 0f;
+                        if (!isBackwards &&
+                            sequencerController.PlayingSequence.elapsedTimeTotal >= sequencerController.PlayingSequence.durationTotal)
                         {
                             sequencerController.Rewind();
                         }
-                        else if (sequencerController.PlayingSequence.IsBackwards() &&
-                                 sequencerController.PlayingSequence.fullPosition <= 0f)
+                        else if (isBackwards &&
+                                 sequencerController.PlayingSequence.elapsedTimeTotal <= 0f)
                         {
                             sequencerController.Complete();
                         }
@@ -500,14 +492,11 @@ namespace BrunoMikoski.AnimationSequencer
             }
             else
             {
-                if (sequencerController.PlayingSequence == null)
+                if (!sequencerController.PlayingSequence.isAlive)
                     sequencerController.Play();
                 else
                 {
-                    if (sequencerController.PlayingSequence.IsActive())
-                        sequencerController.TogglePause();
-                    else
-                        sequencerController.Play();
+                    sequencerController.TogglePause();
                 }
             }
 
@@ -550,15 +539,14 @@ namespace BrunoMikoski.AnimationSequencer
             if (!sequencerController.IsPlaying)
                 PlaySequence();
 
-            sequencerController.PlayingSequence.GotoWithCallbacks(tweenProgress *
-                                                     sequencerController.PlayingSequence.Duration());
+            sequencerController.SetProgress(tweenProgress, false);
         }
 
         private float GetCurrentSequencerProgress()
         {
             float tweenProgress;
-            if (sequencerController.PlayingSequence != null && sequencerController.PlayingSequence.IsActive())
-                tweenProgress = sequencerController.PlayingSequence.ElapsedPercentage();
+            if (sequencerController.PlayingSequence.isAlive && sequencerController.PlayingSequence.durationTotal > 0f)
+                tweenProgress = sequencerController.PlayingSequence.elapsedTimeTotal / sequencerController.PlayingSequence.durationTotal;
             else
                 tweenProgress = 0;
             return tweenProgress;
@@ -566,8 +554,7 @@ namespace BrunoMikoski.AnimationSequencer
 
         private void SetCurrentSequenceProgress(float progress)
         {
-            sequencerController.PlayingSequence.GotoWithCallbacks(progress *
-                                                     sequencerController.PlayingSequence.Duration());
+            sequencerController.SetProgress(progress, false);
         }
 
         private void DrawTimeScaleSlider()
@@ -641,7 +628,7 @@ namespace BrunoMikoski.AnimationSequencer
             }
 
             if (Event.current.type == EventType.Repaint &&
-                DOTweenEditorPreview.isPreviewing &&
+                isPreviewing &&
                 previewingTimings != null &&
                 index >= 0 && index < previewingTimings.Length)
             {
@@ -765,6 +752,18 @@ namespace BrunoMikoski.AnimationSequencer
             {
                 xMax = rect.xMax - size.x - style.margin.left,
             };
+        }
+
+        private void StopPreview()
+        {
+            if (!isPreviewing)
+                return;
+
+            isPreviewing = false;
+            previewingTimings = null;
+            sequencerController.Rewind();
+            sequencerController.ResetToInitialState();
+            sequencerController.ClearPlayingSequence();
         }
     }
 }

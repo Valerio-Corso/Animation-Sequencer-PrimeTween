@@ -1,9 +1,7 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
-using BrunoMikoski.AnimationSequencer;
-using DG.Tweening;
-using DG.Tweening.Core.Easing;
 using JetBrains.Annotations;
+using PrimeTween;
 using UnityEngine;
 
 namespace BrunoMikoski.AnimationSequencer
@@ -17,22 +15,17 @@ namespace BrunoMikoski.AnimationSequencer
         [SerializeField]
         private AnimationCurve curve;
 
-        private EaseFunction easeFunction;
-
-
-        public bool UseCustomCurve => ease == Ease.INTERNAL_Custom;
+        public bool UseCustomCurve => ease == Ease.Custom;
 
         public CustomEase(AnimationCurve curve)
         {
             this.curve = curve;
-            ease = Ease.INTERNAL_Custom;
-            easeFunction = new EaseCurve(curve).Evaluate;
+            ease = Ease.Custom;
         }
 
         public CustomEase(Ease ease)
         {
             this.ease = ease;
-            easeFunction = null;
             curve = null;
         }
 
@@ -56,40 +49,28 @@ namespace BrunoMikoski.AnimationSequencer
             float overshootOrAmplitude = 1.70158f)
         {
             if (UseCustomCurve)
-            {
-                if (easeFunction == null)
-                    easeFunction = new EaseCurve(curve).Evaluate;
+                return curve == null ? time : curve.Evaluate(Mathf.Clamp01(time / Mathf.Max(duration, 0.0001f)));
 
-                return EaseManager.Evaluate(Ease.INTERNAL_Custom, easeFunction, time, duration,
-                    overshootOrAmplitude, DOTween.defaultEasePeriod);
-            }
-            else
-            {
-                return EaseManager.Evaluate(ease, null, time, duration,
-                    overshootOrAmplitude, DOTween.defaultEasePeriod);
-            }
+            float t = Mathf.Clamp01(time / Mathf.Max(duration, 0.0001f));
+            return Easing.Evaluate(t, ToPrimeTweenEase(ease));
         }
 
-        public void ApplyTo(TweenParams tweenParams)
+        public Easing ToEasing()
         {
             if (UseCustomCurve)
-                tweenParams.SetEase(curve);
-            else
-                tweenParams.SetEase(ease);
+                return Easing.Curve(curve);
 
+            return Easing.Standard(ToPrimeTweenEase(ease));
         }
 
-        public void ApplyTo<T>(T tween) where T : Tween
+        private static PrimeTween.Ease ToPrimeTweenEase(Ease ease)
         {
-            if (UseCustomCurve)
-                tween.SetEase(curve);
-            else
-                tween.SetEase(ease);
+            return (PrimeTween.Ease) (int) ease;
         }
 
         public bool Equals(CustomEase other)
         {
-            return ease == other.ease && (ease != Ease.INTERNAL_Custom || Equals(curve, other.curve));
+            return ease == other.ease && (ease != Ease.Custom || Equals(curve, other.curve));
         }
 
         public override bool Equals(object obj)
@@ -101,30 +82,8 @@ namespace BrunoMikoski.AnimationSequencer
         {
             unchecked
             {
-                return ((int)ease * 397) ^ ((ease == Ease.INTERNAL_Custom && curve != null) ? curve.GetHashCode() : 0);
+                return ((int)ease * 397) ^ ((ease == Ease.Custom && curve != null) ? curve.GetHashCode() : 0);
             }
-        }
-    }
-}
-
-namespace DG.Tweening
-{
-    public static partial class CustomEaseExtensions
-    {
-        /// <summary>Sets the ease of the tween using a custom ease function.
-        /// <para>If applied to Sequences eases the whole sequence animation</para></summary>
-        public static TweenParams SetEase(this TweenParams tweenParams, CustomEase customEase)
-        {
-            customEase.ApplyTo(tweenParams);
-            return tweenParams;
-        }
-
-        /// <summary>Sets the ease of the tween.
-        /// <para>If applied to Sequences eases the whole sequence animation</para></summary>
-        public static T SetEase<T>(this T t, CustomEase customEase) where T : Tween
-        {
-            customEase.ApplyTo(t);
-            return t;
         }
     }
 }

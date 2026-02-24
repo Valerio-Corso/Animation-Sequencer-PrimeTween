@@ -2,7 +2,7 @@
     "name": "BrunoMikoski.AnimationSequencer",
     "rootNamespace": "",
     "references": [
-        "DOTween.Modules",
+        "PrimeTween.Runtime",
         "Unity.TextMeshPro",
         "UniTask"
     ],
@@ -25,9 +25,9 @@
             "define": "UNITASK_ENABLED"
         },
         {
-            "name": "com.demigiant.dotween",
+            "name": "com.kyrylokuzyk.primetween",
             "expression": "",
-            "define": "DOTWEEN_ENABLED"
+            "define": "PRIMETWEEN_ENABLED"
         }
     ],
     "noEngineReferences": false

@@ -1,6 +1,6 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
-using DG.Tweening;
+using PrimeTween;
 using UnityEngine;
 
 namespace BrunoMikoski.AnimationSequencer
@@ -38,14 +38,13 @@ namespace BrunoMikoski.AnimationSequencer
         private Transform previousTarget;
         private Vector3 previousScale;
 
-        protected override Tweener GenerateTween_Internal(GameObject target, float duration)
+        protected override Tween GenerateTween_Internal(GameObject target, float duration)
         {
             previousTarget = target.transform;
             previousScale = previousTarget.localScale;
             
-            Tweener tween = target.transform.DOPunchScale(punch, duration, vibrato, elasticity);
-
-            return tween;
+            var settings = new ShakeSettings(punch, duration, vibrato, asymmetryFactor: 1f - elasticity);
+            return Tween.PunchScale(previousTarget, settings);
         }
 
         public override void ResetToInitialState()

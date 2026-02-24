@@ -1,8 +1,6 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
-using DG.Tweening;
-using DG.Tweening.Core;
-using DG.Tweening.Plugins.Options;
+using PrimeTween;
 using UnityEngine;
 
 namespace BrunoMikoski.AnimationSequencer
@@ -34,22 +32,32 @@ namespace BrunoMikoski.AnimationSequencer
         private Transform previousTarget;
         private Quaternion previousRotation;
 
-        protected override Tweener GenerateTween_Internal(GameObject target, float duration)
+        protected override Tween GenerateTween_Internal(GameObject target, float duration)
         {
             previousTarget = target.transform;
-            TweenerCore<Quaternion, Vector3, QuaternionOptions> localTween;
             if (local)
-            {
                 previousRotation = target.transform.localRotation;
-                localTween = target.transform.DOLocalRotate(GetRotation(), duration, rotationMode);
-            }
             else
-            {
                 previousRotation = target.transform.rotation;
-                localTween = target.transform.DORotate(GetRotation(), duration, rotationMode);
+
+            Vector3 rotationValue = GetRotation();
+
+            Vector3 currentEuler = local ? previousTarget.localEulerAngles : previousTarget.eulerAngles;
+            Vector3 endValue = currentEuler + rotationValue;
+            if (rotationMode == RotateMode.LocalAxisAdd || rotationMode == RotateMode.WorldAxisAdd)
+            {
+                var (startAdd, endAdd) = PrimeTweenActionUtils.ResolveVector3(currentEuler, endValue, false, Direction);
+                return local
+                    ? Tween.LocalRotation(previousTarget, startAdd, endAdd, duration, Ease.ToEasing())
+                    : Tween.Rotation(previousTarget, startAdd, endAdd, duration, Ease.ToEasing());
             }
 
-            return localTween;
+            endValue = IsRelative ? currentEuler + rotationValue : rotationValue;
+            var (start, end) = PrimeTweenActionUtils.ResolveVector3(currentEuler, endValue, false, Direction);
+
+            return local
+                ? Tween.LocalRotation(previousTarget, start, end, duration, Ease.ToEasing())
+                : Tween.Rotation(previousTarget, start, end, duration, Ease.ToEasing());
         }
 
         

@@ -1,8 +1,6 @@
-﻿#if DOTWEEN_ENABLED
+﻿#if PRIMETWEEN_ENABLED
 using System;
-using DG.Tweening;
-using DG.Tweening.Core;
-using DG.Tweening.Plugins.Options;
+using PrimeTween;
 using UnityEngine;
 
 namespace BrunoMikoski.AnimationSequencer
@@ -33,24 +31,21 @@ namespace BrunoMikoski.AnimationSequencer
 
         public override string DisplayName => "Move to Position";
 
-        protected override Tweener GenerateTween_Internal(GameObject target, float duration)
+        protected override Tween GenerateTween_Internal(GameObject target, float duration)
         {
-            TweenerCore<Vector3, Vector3, VectorOptions> moveTween;
             previousTarget = target;
             if (localMove)
             {
                 previousPosition = target.transform.localPosition;
-                moveTween = target.transform.DOLocalMove(GetPosition(), duration);
-                
+                Vector3 endValue = PrimeTweenActionUtils.ApplyAxisConstraint(previousPosition, GetPosition(), axisConstraint, IsRelative);
+                var (start, end) = PrimeTweenActionUtils.ResolveVector3(previousPosition, endValue, false, Direction);
+                return Tween.LocalPosition(target.transform, start, end, duration, Ease.ToEasing());
             }
-            else
-            {
-                previousPosition = target.transform.position;
-                moveTween = target.transform.DOMove(GetPosition(), duration);
-            }
-
-            moveTween.SetOptions(axisConstraint);
-            return moveTween;
+            
+            previousPosition = target.transform.position;
+            Vector3 worldEndValue = PrimeTweenActionUtils.ApplyAxisConstraint(previousPosition, GetPosition(), axisConstraint, IsRelative);
+            var (worldStart, worldEnd) = PrimeTweenActionUtils.ResolveVector3(previousPosition, worldEndValue, false, Direction);
+            return Tween.Position(target.transform, worldStart, worldEnd, duration, Ease.ToEasing());
         }
 
         protected abstract Vector3 GetPosition();
