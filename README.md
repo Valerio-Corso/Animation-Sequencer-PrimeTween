@@ -4,6 +4,12 @@ Based upon https://github.com/brunomikoski/Animation-Sequencer
 This project is a fork of the original Animation Sequencer, which was designed to work with DOTween. 
 This fork is simply a migration to PrimeTween for now.
 
+<p align="center">
+  <img alt="Example" src="https://user-images.githubusercontent.com/600419/109826506-c299cb00-7c32-11eb-8b0d-8c0e97c4b5b7.gif">
+   <img alt="Example" src="https://user-images.githubusercontent.com/600419/128615966-ee93d57b-9cfe-4402-9f9c-ded83ef2b0e8.gif">
+
+</p>
+
 ## Features
 - Allow you to create a complex sequence of Tweens/Actions and play on Editor Mode!
 - User Friendly interface with a lot of customization
